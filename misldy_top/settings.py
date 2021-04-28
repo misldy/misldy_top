@@ -122,10 +122,10 @@ USE_TZ = True
 STATIC_URL = '/static/'
 # 开发阶段放置项目自己的静态文件
 STATICFILES_DIRS = (
-    os.path.join(BASE_DIR, 'statics'),
+    os.path.join(BASE_DIR, 'static'),
 )
 # 执行collectstatic命令后会将项目中的静态文件收集到该目录下面来（所以不应该在该目录下面放置自己的一些静态文件，因为会覆盖掉）
-STATIC_ROOT = os.path.join(BASE_DIR, 'static')
+STATIC_ROOT = os.path.join(BASE_DIR, 'statics')
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/3.2/ref/settings/#default-auto-field

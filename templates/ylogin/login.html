@@ -3,7 +3,7 @@
 <html>
 <head>
 		<meta charset="utf-8">
-		<link href="/static/css/style.css" rel='stylesheet' type='text/css' />
+		<link href="/static/ylogin/css/style.css" rel='stylesheet' type='text/css' />
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 		<script type="application/x-javascript"> addEventListener("load", function() { setTimeout(hideURLbar, 0); }, false); function hideURLbar(){ window.scrollTo(0,1); } </script>
 		<!--webfonts-->
@@ -15,7 +15,7 @@
 			<h1>Login or Create a Free Account!</h1>
 		</div>
 		<p>Lorem iopsum dolor sit amit,consetetur sadipscing eliter,sed diam voluptua.At vero  eso et accusam et justo duo dolores et ea rebum. </p>
-			<form action="/register/" method="POST">
+			<form action="{% url 'ylogin:register' %}" method="POST">
 				<ul class="left-form">
 					<h2>New Account:</h2>
 					<li>
@@ -44,7 +44,7 @@
 						<div class="clear"> </div>
 				</ul>
             </form>
-            <form action="/login/" method="post">
+            <form action="{% url 'ylogin:login' %}" method="POST">
 				<ul class="right-form">
                     {% csrf_token %}
 					<h3>Login:</h3>
@@ -61,11 +61,6 @@
 			</form>
 			
 		</div>
-			<!-----start-copyright---->
-   					<div class="copy-right">
-						<p>Template 2014. More Templates <a href="http://www.cssmoban.com/" target="_blank" title="模板之家">模板之家</a> - Collect from <a href="http://www.cssmoban.com/" title="网页模板" target="_blank">网页模板</a></p> 
-					</div>
-				<!-----//end-copyright---->
 
 	
 </body>

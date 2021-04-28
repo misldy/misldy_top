@@ -2,6 +2,7 @@ from django.shortcuts import render, HttpResponseRedirect
 from django.contrib import auth
 from .models import User
 from django import forms
+from django.views import generic
 
 
 class Fuser(forms.Form):
@@ -10,12 +11,18 @@ class Fuser(forms.Form):
     password = forms.CharField(max_length=20)
 
 
+
 # Create your views here.
+# def index(request):
+#     user = request.session.get('user', False)
+#     return render(request, 'ylogin/index.html', {'user': user})
+class IndexView(generic.DetailView):
+    template_name = 'ylogin/index.html'
 
-def index(request):
-    user = request.session.get('user', False)
-
-    return render(request, 'ylogin/index.html', {'user': user})
+    def dispatch(self, request, *args, **kwargs):
+        user = request.session.get('user', False)
+        context = {'user': user}
+        return render(request, self.template_name, context)
 
 
 # 显示页面
@@ -26,15 +33,15 @@ def registerView(request):
     else:
         return HttpResponseRedirect('/')
 
+# class
+
 
 # 注册
 def register(request):
     check = False
     if request.method == 'POST':
         form = Fuser(request.POST)
-        print(form)
         if form.is_valid():
-            # print(form.cleaned_data)
             user = User(**form.cleaned_data)
             user.save()
             check = True
@@ -59,3 +66,5 @@ def login(request):
 def logout(request):
     auth.logout(request)
     return HttpResponseRedirect('/')
+
+
