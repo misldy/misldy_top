@@ -17,7 +17,7 @@ from django.contrib import admin
 from django.urls import path, include
 
 urlpatterns = [
-    path('', include('ylogin.urls')),
-    path('polls/', include('polls.urls')),
+    path('', include('ylogin.urls', namespace='ylogin')),
+    path('polls/', include('polls.urls', namespace='polls')),
     path('admin/', admin.site.urls),
 ]
