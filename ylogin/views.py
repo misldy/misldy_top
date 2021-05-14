@@ -24,6 +24,13 @@ class IndexView(generic.DetailView):
         context = {'user': user}
         return render(request, self.template_name, context)
 
+class RegisterView(generic.DetailView):
+    template_name = 'ylogin/register.html'
+
+    def dispatch(self, request, *args, **kwargs):
+        user = request.session.get('user', False)
+        context = {'user': user}
+        return render(request, self.template_name, context)
 
 # 显示页面
 def registerView(request):
@@ -55,9 +62,6 @@ def login(request):
     user = request.POST['username']
     password = request.POST['password']
     result = User.objects.get(username=user, password=password)
-    print(1111111111111111111)
-    print(result)
-    print(1111111111111111111)
 
     if not result:
         return HttpResponseRedirect('/registerView/')
