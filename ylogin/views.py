@@ -1,28 +1,23 @@
-from django.shortcuts import render, HttpResponseRedirect
-from django.contrib import auth
+from django.shortcuts import render, HttpResponseRedirect, redirect
 from .models import User
-from django import forms
 from django.views import generic
 
-
-class Fuser(forms.Form):
-    username = forms.CharField(max_length=50)
-    email = forms.CharField(max_length=60)
-    password = forms.CharField(max_length=20)
-
+from .forms import UserForm
 
 
 # Create your views here.
-# def index(request):
-#     user = request.session.get('user', False)
-#     return render(request, 'ylogin/index.html', {'user': user})
-class IndexView(generic.DetailView):
-    template_name = 'ylogin/index.html'
+def index(request):
+    a = request.session.get('is_login')
+    print(a)
+    return render(request, 'ylogin/index.html')
+# class IndexView(generic.DetailView):
+#     template_name = 'ylogin/index.html'
 
-    def dispatch(self, request, *args, **kwargs):
-        user = request.session.get('user', False)
-        context = {'user': user}
-        return render(request, self.template_name, context)
+    # def dispatch(self, request, *args, **kwargs):
+    #     user = request.session.get('user', False)
+    #     context = {'user': user}
+    #     return render(request, self.template_name, context)
+
 
 class RegisterView(generic.DetailView):
     template_name = 'ylogin/register.html'
@@ -32,6 +27,7 @@ class RegisterView(generic.DetailView):
         context = {'user': user}
         return render(request, self.template_name, context)
 
+
 # 显示页面
 def registerView(request):
     user = request.session.get('user', False)
@@ -40,6 +36,7 @@ def registerView(request):
     else:
         return HttpResponseRedirect('/')
 
+
 # class
 
 
@@ -47,7 +44,7 @@ def registerView(request):
 def register(request):
     check = False
     if request.method == 'POST':
-        form = Fuser(request.POST)
+        form = UserForm(request.POST)
         if form.is_valid():
             user = User(**form.cleaned_data)
             user.save()
@@ -59,20 +56,37 @@ def register(request):
 
 # 登录
 def login(request):
-    user = request.POST['username']
-    password = request.POST['password']
-    result = User.objects.get(username=user, password=password)
+    message = None
+    if request.session.get('is_login', None):
+        return redirect('/')
 
-    if not result:
-        return HttpResponseRedirect('/registerView/')
-    else:
-        request.session['user'] = user
-        return HttpResponseRedirect('/')
+    if request.method == "POST":
+        login_form = UserForm(request.POST)
+        message = "请检查填写的内容！"
+        if login_form.is_valid():
+            username = login_form.cleaned_data['username']
+            password = login_form.cleaned_data['password']
+            try:
+                user = User.objects.get(name=username)
+                if user.password == password:
+                    request.session['is_login'] = True
+                    request.session['user_id'] = user.id
+                    request.session['user_name'] = user.name
+                    return redirect('/')
+                else:
+                    message = "密码不正确！"
+            except:
+                message = "用户名不存在！"
+        return render(request, 'ylogin/login.html', locals())
+    login_form = UserForm()
+    return render(request, 'ylogin/login.html', locals())
 
 
 # 注销
 def logout(request):
-    auth.logout(request)
-    return HttpResponseRedirect('/')
+    if not request.session.get('is_login', None):
+        return redirect('/')
 
+    request.session.flush()
 
+    return redirect('/')

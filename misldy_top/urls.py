@@ -20,4 +20,5 @@ urlpatterns = [
     path('', include('ylogin.urls', namespace='ylogin')),
     path('polls/', include('polls.urls', namespace='polls')),
     path('admin/', admin.site.urls),
+    path('captcha', include('captcha.urls')),
 ]
