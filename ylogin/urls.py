@@ -9,9 +9,7 @@ from . import views
 app_name = 'ylogin'
 
 urlpatterns = [
-    # path('', views.IndexView.as_view(), name='index'),
     path('', views.index, name='index'),
-    # path('registerView/', views.registerView, name='registerView'),
     path('register/', views.register, name='register'),
     path('login/', views.login, name='login'),
     path('logout/', views.logout, name='logout'),
