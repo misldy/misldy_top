@@ -15,10 +15,12 @@ Including another URLconf
 """
 from django.contrib import admin
 from django.urls import path, include
+from captcha.views import captcha_refresh
 
 urlpatterns = [
     path('', include('ylogin.urls', namespace='ylogin')),
     path('polls/', include('polls.urls', namespace='polls')),
     path('admin/', admin.site.urls),
-    path('captcha', include('captcha.urls')),
+    path('captcha', include('captcha.urls')),   # 生成验证码
+    path('refresh/', captcha_refresh),          # 点击可以刷新验证码
 ]

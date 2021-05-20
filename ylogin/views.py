@@ -7,27 +7,42 @@ from .forms import UserForm, RegisterForm
 
 
 # Create your views here.
-def index(request):
-    return render(request, 'ylogin/index.html')
+class IndexView(generic.ListView):
+    template_name = 'ylogin/index.html'
+
+    def get_queryset(self):
+        return
 
 
-# class IndexView(generic.DetailView):
-#     template_name = 'ylogin/index.html'
+class LoginView(generic.ListView):
+    template_name = 'ylogin/login.html'
 
-# def dispatch(self, request, *args, **kwargs):
-#     user = request.session.get('user', False)
-#     context = {'user': user}
-#     return render(request, self.template_name, context)
-
-
-class RegisterView(generic.DetailView):
-    template_name = 'ylogin/register.html'
+    def get_queryset(self):
+        return redirect('/')
 
     def dispatch(self, request, *args, **kwargs):
-        user = request.session.get('user', False)
-        context = {'user': user}
-        return render(request, self.template_name, context)
-
+        if request.session.get('is_login', None):
+            return redirect('/')
+        elif request.method == "POST":
+            login_form = UserForm(request.POST)
+            message = "请检查填写的内容！"
+            if login_form.is_valid():
+                username = login_form.cleaned_data['username']
+                password = login_form.cleaned_data['password']
+                try:
+                    user = User.objects.get(name=username)
+                except:
+                    message = "用户名不存在！"
+                else:
+                    if user.password == hash_code(password):
+                        request.session['is_login'] = True
+                        request.session['user_id'] = user.id
+                        request.session['user_name'] = user.name
+                        return redirect('/')
+                    else:
+                        message = "密码不正确！"
+        login_form = UserForm()
+        return render(request, self.template_name, locals())
 
 # 注册
 def register(request):
@@ -71,8 +86,6 @@ def register(request):
 
 # 登录
 def login(request):
-    print(request.POST)
-
     message = None
     if request.session.get('is_login', None):
         return redirect('/')
