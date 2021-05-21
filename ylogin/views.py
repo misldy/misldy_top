@@ -14,43 +14,53 @@ class IndexView(generic.ListView):
         return
 
 
-class LoginView(generic.ListView):
+class LoginView(generic.FormView):
+    model = User
     template_name = 'ylogin/login.html'
+    form_class = UserForm
 
-    def get_queryset(self):
-        return redirect('/')
-
-    def dispatch(self, request, *args, **kwargs):
+    def get(self, request, *args, **kwargs):
         if request.session.get('is_login', None):
-            return redirect('/')
-        elif request.method == "POST":
-            login_form = UserForm(request.POST)
-            message = "请检查填写的内容！"
-            if login_form.is_valid():
-                username = login_form.cleaned_data['username']
-                password = login_form.cleaned_data['password']
-                try:
-                    user = User.objects.get(name=username)
-                except:
-                    message = "用户名不存在！"
+            return redirect("/")
+        else:
+            login_form = self.form_class()
+            return render(request, self.template_name, locals())
+
+    def post(self, request, *args, **kwargs):
+        login_form = self.form_class(request.POST)
+        message = "请检查填写的内容！"
+        if login_form.is_valid():
+            username = login_form.cleaned_data['username']
+            password = login_form.cleaned_data['password']
+            try:
+                user = User.objects.get(name=username)
+            except:
+                message = "用户名不存在！"
+            else:
+                if user.password == hash_code(password):
+                    request.session['is_login'] = True
+                    request.session['user_id'] = user.id
+                    request.session['user_name'] = user.name
+                    return redirect('/')
                 else:
-                    if user.password == hash_code(password):
-                        request.session['is_login'] = True
-                        request.session['user_id'] = user.id
-                        request.session['user_name'] = user.name
-                        return redirect('/')
-                    else:
-                        message = "密码不正确！"
-        login_form = UserForm()
+                    message = "密码不正确！"
         return render(request, self.template_name, locals())
 
-# 注册
-def register(request):
-    if request.session.get('is_login', None):
-        # 登录状态不允许注册。你可以修改这条原则！
-        return redirect("/")
-    if request.method == "POST":
-        register_form = RegisterForm(request.POST)
+
+class RegisterView(generic.CreateView):
+    model = User
+    template_name = 'ylogin/register.html'
+    form_class = RegisterForm
+
+    def get(self, request, *args, **kwargs):
+        if request.session.get('is_login', None):
+            return redirect("/")
+        else:
+            register_form = self.form_class()
+            return render(request, self.template_name, locals())
+
+    def post(self, request, *args, **kwargs):
+        register_form = self.form_class(request.POST)
         message = "请检查填写的内容！"
         if register_form.is_valid():  # 获取数据
             username = register_form.cleaned_data['username']
@@ -60,60 +70,28 @@ def register(request):
             sex = register_form.cleaned_data['sex']
             if password1 != password2:  # 判断两次密码是否相同
                 message = "两次输入的密码不同！"
-                return render(request, 'ylogin/register.html', locals())
             else:
                 same_name_user = User.objects.filter(name=username)
+                same_email_user = User.objects.filter(email=email)
                 if same_name_user:  # 用户名唯一
                     message = '用户已经存在，请重新选择用户名！'
-                    return render(request, 'ylogin/register.html', locals())
-                same_email_user = User.objects.filter(email=email)
-                if same_email_user:  # 邮箱地址唯一
+                elif same_email_user:  # 邮箱地址唯一
                     message = '该邮箱地址已被注册，请使用别的邮箱！'
-                    return render(request, 'ylogin/register.html', locals())
-
-                # 当一切都OK的情况下，创建新用户
-
-                new_user = User.objects.create()
-                new_user.name = username
-                new_user.password = hash_code(password1)
-                new_user.email = email
-                new_user.sex = sex
-                new_user.save()
-                return redirect('/login/')  # 自动跳转到登录页面
-    register_form = RegisterForm()
-    return render(request, 'ylogin/register.html', locals())
-
-
-# 登录
-def login(request):
-    message = None
-    if request.session.get('is_login', None):
-        return redirect('/')
-
-    if request.method == "POST":
-        login_form = UserForm(request.POST)
-        message = "请检查填写的内容！"
-        if login_form.is_valid():
-            username = login_form.cleaned_data['username']
-            password = login_form.cleaned_data['password']
-            try:
-                user = User.objects.get(name=username)
-                if user.password == hash_code(password):
-                    request.session['is_login'] = True
-                    request.session['user_id'] = user.id
-                    request.session['user_name'] = user.name
-                    return redirect('/')
                 else:
-                    message = "密码不正确！"
-            except:
-                message = "用户名不存在！"
-        return render(request, 'ylogin/login.html', locals())
-    login_form = UserForm()
-    return render(request, 'ylogin/login.html', locals())
+                    # 当一切都OK的情况下，创建新用户
+                    new_user = User.objects.create()
+                    new_user.name = username
+                    new_user.password = hash_code(password1)
+                    new_user.email = email
+                    new_user.sex = sex
+                    new_user.save()
+                    return redirect('/login/')  # 自动跳转到登录页面
+        return render(request, self.template_name, locals())
 
 
 # 注销
 def logout(request):
+    print(request.POST.get('next_href'))
     if not request.session.get('is_login', None):
         return redirect('/')
 
